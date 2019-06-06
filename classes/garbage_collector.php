@@ -40,7 +40,7 @@ use xmldb;
 class garbage_collector {
 
     /**
-     * Where tha garbage will be backed-up.
+     * Where the garbage will be backed-up.
      *
      * @return void
      */
@@ -75,40 +75,30 @@ class garbage_collector {
      * @return void
      */
     public function cleanup() {
-        global $DB;
-
-        // Get the complete currently-setup XML schema for that instance.
-        $dbman = $DB->get_manager();
-        $xmlschema = $dbman->get_install_xml_schema();
-
         $cleanedup = [];
-        // Run through all tables, all keys, to check if we have mismatched entries.
-        foreach ($xmlschema->getTables() as $table) {
-            foreach ($table->getKeys() as $key) {
-                if (in_array($key->getType(), [XMLDB_KEY_FOREIGN, XMLDB_KEY_FOREIGN_UNIQUE]) ) {
-                    // We have a foreign key for another table.
-                    // Get orphaned records for that table/key pair.
-                    $records = $this->_get_orphaned_records($table, $key);
+        foreach ($this->_get_all_foreign_key_tuples() as $tuple) {
+            $table = $tuple->table;
+            $key = $tuple->key;
+            // We have a foreign key for another table.
+            // Get orphaned records for that table/key pair.
+            $records = $this->_get_orphaned_records($table, $key);
+            $nrecords = count($records);
 
-                    $n_records = count($records);
+            if ($nrecords > 0) {
+                mtrace(
+                    sprintf(
+                        '%s has %d records pointing to inexistant counterparts in table %s',
+                        $table->getName(),
+                        $nrecords,
+                        $key->getRefTable()
+                    )
+                );
 
-                    if ($n_records > 0) {
-                        mtrace(
-                            sprintf(
-                                '%s has %d records pointing to inexistant counterparts in table %s',
-                                $table->getName(),
-                                $n_records,
-                                $key->getRefTable()
-                            )
-                        );
-
-                        mtrace(' → Create backup');
-                        $this->_backup_records($table, $records);
-                        mtrace(' → Delete');
-                        $this->_delete_records($table, $records);
-                        $cleanedup[] = $n_records;
-                    }
-                }
+                mtrace(' → Create backup');
+                $this->_backup_records($table, $records);
+                mtrace(' → Delete');
+                $this->_delete_records($table, $records);
+                $cleanedup[] = $nrecords;
             }
         }
 
@@ -118,11 +108,63 @@ class garbage_collector {
         }
     }
 
+
+    /**
+     * Get a report of how many orphaned entries exist in the concerned tables
+     *
+     * @return array of all the concerned records
+     */
+    public function report() {
+        $report = [];
+        foreach ($this->_get_all_foreign_key_tuples() as $tuple) {
+            $table = $tuple->table;
+            $key = $tuple->key;
+            // We have a foreign key for another table.
+            // Get orphaned records for that table/key pair.
+            $records = $this->_get_orphaned_records($table, $key);
+            $nrecords = count($records);
+
+            if ($nrecords > 0) {
+                $report[$table->getName()] = $records;
+            }
+        }
+        return $report;
+    }
+
+    /**
+     * Get the full list of foreign key table/key tuples
+     *
+     * @return array of objects containing only table and key.
+     */
+    private function _get_all_foreign_key_tuples() {
+        static $tuples = [];
+
+        global $DB;
+
+        // Get the complete currently-setup XML schema for that instance.
+        $dbman = $DB->get_manager();
+        $xmlschema = $dbman->get_install_xml_schema();
+
+        $tuples = [];
+        // Run through all tables, all keys, to check if we have mismatched entries.
+        foreach ($xmlschema->getTables() as $table) {
+            foreach ($table->getKeys() as $key) {
+                if (in_array($key->getType(), [XMLDB_KEY_FOREIGN, XMLDB_KEY_FOREIGN_UNIQUE]) ) {
+                    $tuple = new \stdClass();
+                    $tuple->table = $table;
+                    $tuple->key = $key;
+                    $tuples[] = $tuple;
+                }
+            }
+        }
+        return $tuples;
+    }
+
     /**
      * Given a table and a key, get orphaned records for these.
      *
-     * @param  \xmldb_table source table object
-     * @param  \xmldb_key   foreign key object
+     * @param \xmldb_table $table source table object
+     * @param \xmldb_key   $key   foreign key object
      *
      * @return array of fieldset objets
      */
@@ -163,8 +205,8 @@ class garbage_collector {
     /**
      * Given a table and a set of records; backup these in the designated backup file.
      *
-     * @param  \xmldb_table source table object
-     * @param  array of fieldset objets
+     * @param \xmldb_table $table   source table object
+     * @param array        $records of fieldset objets
      *
      * @return void
      */
@@ -205,8 +247,8 @@ class garbage_collector {
     /**
      * Given a table and a set of records; delete these.
      *
-     * @param  \xmldb_table source table object
-     * @param  array of fieldset objets
+     * @param \xmldb_table $table   source table object
+     * @param array        $records of fieldset objets
      *
      * @return void
      */
