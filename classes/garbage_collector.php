@@ -40,9 +40,7 @@ use xmldb;
 class garbage_collector {
 
     /**
-     * Where the garbage will be backed-up.
-     *
-     * @return void
+     * @var string $_backupfilepath Where the garbage will be backed-up.
      */
     private $_backupfilepath;
 
@@ -114,7 +112,7 @@ class garbage_collector {
      *
      * @return array of all the concerned records
      */
-    public function report() {
+    public function get_report() {
         $report = [];
         foreach ($this->_get_all_foreign_key_tuples() as $tuple) {
             $table = $tuple->table;

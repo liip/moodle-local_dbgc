@@ -28,6 +28,8 @@ require_once($CFG->libdir.'/adminlib.php');
 
 $selfpath = '/local/dbgc/index.php';
 
+use \local_dbgc\garbage_collector;
+
 // This is an admin page.
 admin_externalpage_setup('remove_garbage');
 
@@ -68,7 +70,12 @@ if ($schedule) {
         redirect(new moodle_url($selfpath), new lang_string('scheduled_correctly', 'local_dbgc'));
     }
 }
+
+// Gather the report.
+$gc = new garbage_collector();
+$report = $gc->get_report();
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading(new lang_string('settingspage', 'local_dbgc'));
-echo $renderer->admin_page();
+echo $renderer->admin_page($report);
 echo $OUTPUT->footer();

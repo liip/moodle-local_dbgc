@@ -44,7 +44,9 @@ class renderer extends plugin_renderer_base {
      * @return string html for the page
      * @throws moodle_exception
      */
-    public function admin_page() {
-        return parent::render_from_template('local_dbgc/admin_page', new \stdClass());
+    public function admin_page(array $report = []) {
+        $params = [];
+        $params['notneeded'] = (count($report) == 0);
+        return parent::render_from_template('local_dbgc/admin_page', $params);
     }
 }
