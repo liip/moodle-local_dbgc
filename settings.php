@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $url = new moodle_url('/local/dbgc/remove_garbage.php');
+    $url = new moodle_url('/local/dbgc/index.php');
     $ADMIN->add(
         'server',
         new admin_externalpage('remove_garbage', get_string('settingspage', 'local_dbgc'), $url)

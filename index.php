@@ -26,23 +26,48 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 
-// This is an admin page
+$selfpath = '/local/dbgc/index.php';
+
+// This is an admin page.
 admin_externalpage_setup('remove_garbage');
 
-// Require site configuration capability
+// Require site configuration capability.
 require_capability('moodle/site:config', context_system::instance());
 
-// Get the submitted params
+// Get the submitted params.
 $schedule    = optional_param('schedule', 0, PARAM_BOOL);
-$doit        = optional_param('doit', 0, PARAM_BOOL);
+$confirm     = optional_param('confirm', 0, PARAM_BOOL);
 
-// Page settings
+// Page settings.
 $PAGE->set_context(context_system::instance());
 
-// Grab the renderer
+// Grab the renderer.
 $renderer = $PAGE->get_renderer('local_dbgc');
 
-// Display the page
+if ($schedule) {
+    // One was called.
+    if (!$confirm or !data_submitted() or !confirm_sesskey()) {
+        $optionsyes = array(
+            'confirm' => 1,
+            'sesskey' => sesskey()
+        );
+        if ($schedule) {
+            $optionsyes['schedule'] = 1;
+            $confirm = new lang_string('confirm_schedule', 'local_dbgc');
+        }
+        echo $OUTPUT->header();
+        echo $OUTPUT->heading(new lang_string('settingspage', 'local_dbgc'));
+        echo $OUTPUT->confirm($confirm, new moodle_url('/local/dbgc/index.php', $optionsyes), new moodle_url($selfpath));
+        echo $OUTPUT->footer();
+        die;
+    }
+    if ($schedule) {
+        // Schedule the adhoc task; will be run at next cron.
+        $collector = new \local_dbgc\task\garbage_collect_db();
+        \core\task\manager::queue_adhoc_task($collector);
+        redirect(new moodle_url($selfpath), new lang_string('scheduled_correctly', 'local_dbgc'));
+    }
+}
 echo $OUTPUT->header();
 echo $OUTPUT->heading(new lang_string('settingspage', 'local_dbgc'));
 echo $renderer->admin_page();

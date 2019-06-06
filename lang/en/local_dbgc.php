@@ -25,3 +25,6 @@
 
 $string['pluginname'] = "Database Garbage Collector";
 $string['settingspage'] = "Cleanup DB from cruft";
+$string['schedule'] = "Schedule garbage collection";
+$string['confirm_schedule'] = "The database garbage collection will be scheduled and run at a later point by the instance cron. Is this what you really want?";
+$string['scheduled_correctly'] = "The garbage collection ad'hoc task has been correctly scheduled. Watch out the cron logs!";
