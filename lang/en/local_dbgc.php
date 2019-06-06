@@ -29,3 +29,6 @@ $string['schedule'] = "Schedule garbage collection";
 $string['confirm_schedule'] = "The database garbage collection will be scheduled and run at a later point by the instance cron. Is this what you really want?";
 $string['scheduled_correctly'] = "The garbage collection ad'hoc task has been correctly scheduled. Watch out the cron logs!";
 $string['notneeded'] = 'There are no orphaned records in the database, all good!';
+$string['needed'] = 'There are {$a} orphaned records in the database; they should be removed!';
+$string['reporttitle'] = 'Detailed report';
+$string['n_orphaned_records'] = '{$a} orphaned records';

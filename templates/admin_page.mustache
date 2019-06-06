@@ -18,7 +18,22 @@
     <p>{{#str}} notneeded, local_dbgc {{/str}}</p>
 {{/notneeded}}
 {{^notneeded}}
-<a role="button" title="{{#str}} schedule, local_dbgc {{/str}}" class="btn btn-secondary" href="?schedule=1">
-    {{#str}} schedule, local_dbgc {{/str}}
-</a>
+
+{{> core/notification_warning}}
+
+<div class="btn-group" role="group">
+    <a role="button" title="{{#str}} schedule, local_dbgc {{/str}}" class="btn btn-secondary" href="?schedule=1">
+        {{#str}} schedule, local_dbgc {{/str}}
+    </a>
+</div>
+
+<h3>{{#str}} reporttitle, local_dbgc {{/str}}</h3>
+
+<dl>
+{{#report}}
+  <dt>{{{ name }}}</dt>
+  <dd>{{#str}} n_orphaned_records, local_dbgc, {{count}} {{/str}}</dd>
+{{/report}}
+</dl>
+
 {{/notneeded}}

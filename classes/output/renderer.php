@@ -47,6 +47,15 @@ class renderer extends plugin_renderer_base {
     public function admin_page(array $report = []) {
         $params = [];
         $params['notneeded'] = (count($report) == 0);
+        $params['report'] = [];
+        $totalrecords = 0;
+        foreach ($report as $tablename => $records) {
+            $nrecords = count($records);
+            $totalrecords += $nrecords;
+            $params['report'][] = ['name' => $tablename, 'count' => $nrecords];
+        }
+
+        $params['message'] = new \lang_string('needed', 'local_dbgc', $totalrecords);
         return parent::render_from_template('local_dbgc/admin_page', $params);
     }
 }
