@@ -14,4 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Database Garbage Collector translations
+ *
+ * @package local_dbgc
+ * @copyright Liip AG <https://www.liip.ch/>
+ * @author Didier Raboud <didier.raboud@liip.ch>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 $string['pluginname'] = "Database Garbage Collector";
