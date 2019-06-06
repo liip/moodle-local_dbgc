@@ -40,9 +40,15 @@ class garbage_collect_db extends \core\task\adhoc_task {
      * Run the migration task.
      */
     public function execute() {
-        global $DB;
-        $dbman = $DB->get_manager();
+        global $CFG, $DB;
 
+        // Make sure our backup directory is ready.
+        $backupdir = $CFG->dataroot . '/dbgc/';
+        make_writable_directory($backupdir, false);
+        $backupfile = $backupdir . sprintf('/dbgc_backup_%s.sql', date('Ymd_His'));
+
+        // Get the complete currently-setup XML schema for that instance.
+        $dbman = $DB->get_manager();
         $xmlschema = $dbman->get_install_xml_schema();
 
         $cleanedup = [];
@@ -58,7 +64,7 @@ class garbage_collect_db extends \core\task\adhoc_task {
                     $reffields = $key->getRefFields();
 
                     // Build SQL to find the orphaned records.
-                    $sql = sprintf("SELECT t.id
+                    $sql = sprintf("SELECT t.*
                                     FROM {%s} t
                          LEFT OUTER JOIN {%s} r",
                         $tablename,
@@ -78,21 +84,64 @@ class garbage_collect_db extends \core\task\adhoc_task {
                     $sql .= ' ON ' . implode(' AND ', $onfields);
                     $sql .= ' WHERE ' . implode(' AND ', $conditions);
 
-                    $records = $DB->get_records_sql_menu($sql);
-                            
+                    // Get these orphaned records.
+                    $records = $DB->get_records_sql($sql);
+
                     if (count($records) > 0) {
-                        mtrace(sprintf('%s has %d records pointing to inexistant counterparts in table %s, delete them now.', $tablename, count($records), $reftablename));
+                        mtrace(
+                            sprintf(
+                                '%s has %d records pointing to inexistant counterparts in table %s',
+                                $tablename,
+                                count($records),
+                                $reftablename
+                            )
+                        );
+
+                        mtrace(' → Create backup');
+                        // Create a backup INSERT for the lines-to-be-deleted.
+                        $fieldnames = [];
+                        foreach ($table->getFields() as $field) {
+                            $name = $field->getName();
+                            if ($name != 'id') {
+                                $fieldnames[] = $field->getName();
+                            }
+                        }
+                        $insertsql = sprintf(
+                            "-- Backup of the %s entries deleted on %s\n",
+                            $tablename,
+                            date('Ymd_His')
+                        );
+                        $insertsql .= sprintf("INSERT INTO %s%s (%s) VALUES \n",
+                            $CFG->prefix,
+                            $tablename,
+                            implode(',', $fieldnames)
+                        );
+                        $recordsqls = [];
+                        foreach ($records as $record) {
+                            $recordstruct = [];
+                            foreach ($fieldnames as $fieldname) {
+                                $recordstruct[] = sprintf("'%s'", addslashes($record->{$fieldname}));
+                            }
+                            $recordsqls[] = sprintf('  (%s)', implode(',', $recordstruct));
+                        }
+                        $insertsql .= implode(",\n", $recordsqls);
+                        $insertsql .= ';';
+                        // Write the INSERT lines in the backup file.
+                        file_put_contents($backupfile, $insertsql, FILE_APPEND);
+
+                        mtrace(' → Delete');
+                        // Now delete all these entries.
                         list($insql, $inparams) = $DB->get_in_or_equal(array_keys($records), SQL_PARAMS_NAMED);
                         $DB->delete_records_select($tablename, "id $insql", $inparams);
-
-                        $cleanedup[] = $records;
+                        $cleanedup[] = count($records);
                     }
                 }
             }
         }
 
         if (count($cleanedup) > 0) {
-            mtrace(sprintf('%d tables cleaned up from %d orphaned records', count($cleanedup), sum($cleanedup)));
+            mtrace(sprintf('%d tables cleaned up from %d orphaned records', count($cleanedup), array_sum($cleanedup)));
+            mtrace(sprintf('A backup is to be found at : %s', $backupfile));
         }
     }
 }
