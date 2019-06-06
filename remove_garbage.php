@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Database Garbage Collector translations
+ * Database Garbage Collector removal launcher
  *
  * @package local_dbgc
  * @copyright Liip AG <https://www.liip.ch/>
@@ -23,5 +23,27 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = "Database Garbage Collector";
-$string['settingspage'] = "Cleanup DB from cruft";
+require_once(__DIR__ . '/../../config.php');
+require_once($CFG->libdir.'/adminlib.php');
+
+// This is an admin page
+admin_externalpage_setup('remove_garbage');
+
+// Require site configuration capability
+require_capability('moodle/site:config', context_system::instance());
+
+// Get the submitted params
+$schedule    = optional_param('schedule', 0, PARAM_BOOL);
+$doit        = optional_param('doit', 0, PARAM_BOOL);
+
+// Page settings
+$PAGE->set_context(context_system::instance());
+
+// Grab the renderer
+$renderer = $PAGE->get_renderer('local_dbgc');
+
+// Display the page
+echo $OUTPUT->header();
+echo $OUTPUT->heading(new lang_string('settingspage', 'local_dbgc'));
+echo $renderer->admin_page();
+echo $OUTPUT->footer();
