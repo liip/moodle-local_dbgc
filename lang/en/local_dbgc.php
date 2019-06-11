@@ -32,3 +32,7 @@ $string['notneeded'] = 'There are no orphaned records in the database, all good!
 $string['needed'] = 'There are {$a} orphaned records in the database; they should be removed!';
 $string['reporttitle'] = 'Detailed report';
 $string['n_orphaned_records'] = '{$a} orphaned records';
+
+$string['doitnow'] = "Proceed with garbage collection now";
+$string['confirm_doit'] = "The database garbage collection will be run NOW within the webserver process. Is this what you really want?";
+$string['donenow_correctly'] = "The garbage collection has been correctly executed.";

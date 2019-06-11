@@ -40,6 +40,7 @@ require_capability('moodle/site:config', context_system::instance());
 
 // Get the submitted params.
 $schedule    = optional_param('schedule', 0, PARAM_BOOL);
+$doitnow     = optional_param('doitnow', 0, PARAM_BOOL);
 $confirm     = optional_param('confirm', 0, PARAM_BOOL);
 
 // Page settings.
@@ -48,8 +49,10 @@ $PAGE->set_context(context_system::instance());
 // Grab the renderer.
 $renderer = $PAGE->get_renderer('local_dbgc');
 
-if ($schedule) {
-    // One was called.
+$doitreally = false;
+
+if ($schedule || $doitnow) {
+    // One of the two alternatives was called.
     if (!$confirm or !data_submitted() or !confirm_sesskey()) {
         $optionsyes = array(
             'confirm' => 1,
@@ -58,6 +61,9 @@ if ($schedule) {
         if ($schedule) {
             $optionsyes['schedule'] = 1;
             $confirm = new lang_string('confirm_schedule', 'local_dbgc');
+        } elseif ($doitnow) {
+            $optionsyes['doitnow'] = 1;
+            $confirm = new lang_string('confirm_doit', 'local_dbgc');
         }
         echo $OUTPUT->header();
         echo $OUTPUT->heading(new lang_string('settingspage', 'local_dbgc'));
@@ -83,7 +89,10 @@ $progress = new \core\progress\display();
 
 $gc = new garbage_collector($progress);
 
-$report = $gc->get_report();
-echo $renderer->admin_page($report);
-
+if ($doitreally) {
+    $gc->cleanup();
+} else {
+    $report = $gc->get_report();
+    echo $renderer->admin_page($report);
+}
 echo $OUTPUT->footer();
