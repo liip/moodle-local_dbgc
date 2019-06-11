@@ -49,7 +49,7 @@ class garbage_collector {
     /**
      * @var int How many records to backup and delete at a time.
      */
-    const CLEANUP_STEP = 1024*32;
+    const CLEANUP_STEP = 1024*128;
 
     /**
      * @var string $_backupfilepath Where the garbage will be backed-up.
