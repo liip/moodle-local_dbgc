@@ -97,6 +97,7 @@ class garbage_collector {
      */
     public function cleanup() {
         $cleanedup = [];
+        mtrace(sprintf('Starting cleanup; backup will be found at %s', $this->_backupfilepath));
         $tuples = $this->_get_all_foreign_key_tuples();
 
         $this->_progress->start_progress('dbgc_report', count($tuples));
@@ -121,7 +122,7 @@ class garbage_collector {
                 );
 
                 mtrace(' → Create backup');
-                $this->_backup_records($table, $records);
+                $this->_backup_records($table, $key, $records);
                 mtrace(' → Delete');
                 $this->_delete_records($table, $records);
                 $cleanedup[] = $nrecords;
@@ -240,11 +241,12 @@ class garbage_collector {
      * Given a table and a set of records; backup these in the designated backup file.
      *
      * @param \xmldb_table $table   source table object
+     * @param \xmldb_key   $key     foreign key object
      * @param array        $records of fieldset objets
      *
      * @return void
      */
-    private function _backup_records(\xmldb_table $table, array $records) {
+    private function _backup_records(\xmldb_table $table, \xmldb_key $key, array $records) {
         global $CFG;
         // Create a backup INSERT for the lines-to-be-deleted.
         $fieldnames = [];
@@ -255,9 +257,13 @@ class garbage_collector {
             }
         }
         $insertsql = sprintf(
-            "-- Backup of the %s entries deleted on %s\n",
+            "-- Backup of %s entries deleted on %s\n-- %s (%s) → %s (%s)\n",
             $table->getName(),
-            date('Ymd_His')
+            date('Ymd_His'),
+            $table->getName(),
+            implode(',', $key->getFields()),
+            $key->getRefTable(),
+            implode(',', $key->getRefFields())
         );
         $insertsql .= sprintf("INSERT INTO %s%s (%s) VALUES \n",
             $CFG->prefix,
@@ -273,7 +279,7 @@ class garbage_collector {
             $recordsqls[] = sprintf('  (%s)', implode(',', $recordstruct));
         }
         $insertsql .= implode(",\n", $recordsqls);
-        $insertsql .= ';';
+        $insertsql .= ';\n';
         // Write the INSERT lines in the backup file.
         return file_put_contents($this->_backupfilepath, $insertsql, FILE_APPEND);
     }
