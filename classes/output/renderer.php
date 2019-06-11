@@ -41,6 +41,8 @@ class renderer extends plugin_renderer_base {
     /**
      * Render the admin page
      *
+     * @param array $report The gc report as spit by \local_dbgc\garbage_collector.
+     *
      * @return string html for the page
      * @throws moodle_exception
      */

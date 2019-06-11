@@ -40,10 +40,18 @@ use xmldb;
 class garbage_collector {
 
     /**
-     * @var int Whether to get the count, all the IDs or all the data.
+     * @var int In the report, get the count of concerned entries.
      */
     const REPORT_GET_COUNT = 1;
+
+    /**
+     * @var int In the report, get the ids of concerned entries.
+     */
     const REPORT_GET_IDS = 2;
+
+    /**
+     * @var int In the report, get the full data of concerned entries.
+     */
     const REPORT_GET_DATA = 3;
 
     /**
