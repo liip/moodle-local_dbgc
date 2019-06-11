@@ -42,6 +42,7 @@ require_capability('moodle/site:config', context_system::instance());
 $schedule    = optional_param('schedule', 0, PARAM_BOOL);
 $doitnow     = optional_param('doitnow', 0, PARAM_BOOL);
 $confirm     = optional_param('confirm', 0, PARAM_BOOL);
+$notneeded   = optional_param('notneeded', 0, PARAM_BOOL);
 
 // Page settings.
 $PAGE->set_context(context_system::instance());
@@ -85,16 +86,23 @@ if ($schedule || $doitnow) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading(new lang_string('settingspage', 'local_dbgc'));
 
-$progress = new \core\progress\display();
-
-$gc = new garbage_collector($progress);
-
-if ($doitreally) {
-    echo "<pre>";
-    $gc->cleanup();
-    echo "</pre>";
+if ($notneeded) {
+    echo $renderer->admin_page([]);
 } else {
-    $report = $gc->get_report();
-    echo $renderer->admin_page($report);
+    $progress = new \core\progress\display();
+
+    $gc = new garbage_collector($progress);
+
+    if ($doitreally) {
+        echo "<pre>";
+        $gc->cleanup();
+        echo "</pre>";
+    } else {
+        $report = $gc->get_report();
+        if (empty($report)) {
+            redirect(new moodle_url($selfpath, ['notneeded' => 1]));
+        }
+        echo $renderer->admin_page($report);
+    }
 }
 echo $OUTPUT->footer();
