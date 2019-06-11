@@ -49,7 +49,7 @@ class garbage_collector {
     /**
      * @var int How many records to backup and delete at a time.
      */
-    const CLEANUP_STEP = 1024*128;
+    const CLEANUP_STEP = 1024 * 128;
 
     /**
      * @var string $_backupfilepath Where the garbage will be backed-up.
@@ -238,15 +238,15 @@ class garbage_collector {
         $reffields = $key->getRefFields();
 
         switch ($whattoget) {
-        case self::REPORT_GET_COUNT:
-        default:
-            $selected = 'COUNT(t.id)';
+            case self::REPORT_GET_COUNT:
+            default:
+                $selected = 'COUNT(t.id)';
             break;
-        case self::REPORT_GET_IDS:
-            $selected = 't.id';
+            case self::REPORT_GET_IDS:
+                $selected = 't.id';
             break;
-        case self::REPORT_GET_DATA:
-            $selected = 't.*';
+            case self::REPORT_GET_DATA:
+                $selected = 't.*';
             break;
         }
 
@@ -278,11 +278,11 @@ class garbage_collector {
         }
 
         switch ($whattoget) {
-        case self::REPORT_GET_COUNT:
-        default:
+            case self::REPORT_GET_COUNT:
+            default:
             return $DB->count_records_sql($sql);
-        case self::REPORT_GET_IDS:
-        case self::REPORT_GET_DATA:
+            case self::REPORT_GET_IDS:
+            case self::REPORT_GET_DATA:
             return $DB->get_records_sql($sql);
         }
     }

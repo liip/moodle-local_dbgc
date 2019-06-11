@@ -62,7 +62,7 @@ if ($schedule || $doitnow) {
         if ($schedule) {
             $optionsyes['schedule'] = 1;
             $confirm = new lang_string('confirm_schedule', 'local_dbgc');
-        } elseif ($doitnow) {
+        } else if ($doitnow) {
             $optionsyes['doitnow'] = 1;
             $confirm = new lang_string('confirm_doit', 'local_dbgc');
         }
@@ -77,7 +77,7 @@ if ($schedule || $doitnow) {
         $collector = new \local_dbgc\task\garbage_collect_db();
         \core\task\manager::queue_adhoc_task($collector);
         redirect(new moodle_url($selfpath), new lang_string('scheduled_correctly', 'local_dbgc'));
-    } elseif ($doitnow) {
+    } else if ($doitnow) {
         $doitreally = true;
         raise_memory_limit(MEMORY_EXTRA);
     }
