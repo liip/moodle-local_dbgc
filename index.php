@@ -90,7 +90,9 @@ $progress = new \core\progress\display();
 $gc = new garbage_collector($progress);
 
 if ($doitreally) {
+    echo "<pre>";
     $gc->cleanup();
+    echo "</pre>";
 } else {
     $report = $gc->get_report();
     echo $renderer->admin_page($report);
