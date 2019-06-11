@@ -42,8 +42,6 @@ class garbage_collect_db extends \core\task\adhoc_task {
      * Run the migration task.
      */
     public function execute() {
-        global $CFG, $DB;
-
         $gc = new garbage_collector();
         $gc->cleanup();
     }
