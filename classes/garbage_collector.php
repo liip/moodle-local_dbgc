@@ -50,11 +50,18 @@ class garbage_collector {
     private $_xmlschema;
 
     /**
+     * @var \core\progress\base $_progress Progress object.
+     */
+    private $_progress;
+
+    /**
      * Initializes what the GC needs.
+     *
+     * @param \core\progress\base $progress Progress handler
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct(\core\progress\base $progress = null) {
         global $DB;
 
         $this->_backupfilepath = $this->get_backup_file_path();
@@ -62,6 +69,11 @@ class garbage_collector {
         // Get the complete currently-setup XML schema for that instance.
         $dbman = $DB->get_manager();
         $this->_xmlschema = $dbman->get_install_xml_schema();
+        if (is_null($progress)) {
+            $this->_progress = new \core\progress\none();
+        } else {
+            $this->_progress = $progress;
+        }
     }
 
     /**
@@ -85,7 +97,11 @@ class garbage_collector {
      */
     public function cleanup() {
         $cleanedup = [];
-        foreach ($this->_get_all_foreign_key_tuples() as $tuple) {
+        $tuples = $this->_get_all_foreign_key_tuples();
+
+        $this->_progress->start_progress('dbgc_report', count($tuples));
+
+        foreach ($tuples as $tupleid => $tuple) {
             $table = $tuple->table;
             $key = $tuple->key;
             // We have a foreign key for another table.
@@ -94,6 +110,7 @@ class garbage_collector {
             $nrecords = count($records);
 
             if ($nrecords > 0) {
+                $this->_progress->progress($tupleid);
                 mtrace(
                     sprintf(
                         '%s has %d records pointing to inexistant counterparts in table %s',
@@ -115,6 +132,8 @@ class garbage_collector {
             mtrace(sprintf('%d tables cleaned up from %d orphaned records', count($cleanedup), array_sum($cleanedup)));
             mtrace(sprintf('A backup is to be found at : %s', $this->_backupfilepath));
         }
+
+        $this->_progress->end_progress();
     }
 
 
@@ -125,7 +144,10 @@ class garbage_collector {
      */
     public function get_report() {
         $report = [];
-        foreach ($this->_get_all_foreign_key_tuples() as $tuple) {
+        $tuples = $this->_get_all_foreign_key_tuples();
+
+        $this->_progress->start_progress('dbgc_report', count($tuples));
+        foreach ($tuples as $tupleid => $tuple) {
             $table = $tuple->table;
             $key = $tuple->key;
             // We have a foreign key for another table.
@@ -135,7 +157,11 @@ class garbage_collector {
             if ($records > 0) {
                 $report[$table->getName()] = $records;
             }
+
+            $this->_progress->progress($tupleid);
         }
+
+        $this->_progress->end_progress();
         return $report;
     }
 

@@ -23,6 +23,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('NO_OUTPUT_BUFFERING', true);
+
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 
@@ -68,14 +70,20 @@ if ($schedule) {
         $collector = new \local_dbgc\task\garbage_collect_db();
         \core\task\manager::queue_adhoc_task($collector);
         redirect(new moodle_url($selfpath), new lang_string('scheduled_correctly', 'local_dbgc'));
+    } elseif ($doitnow) {
+        $doitreally = true;
+        raise_memory_limit(MEMORY_EXTRA);
     }
 }
 
-// Gather the report.
-$gc = new garbage_collector();
-$report = $gc->get_report();
-
 echo $OUTPUT->header();
 echo $OUTPUT->heading(new lang_string('settingspage', 'local_dbgc'));
+
+$progress = new \core\progress\display();
+
+$gc = new garbage_collector($progress);
+
+$report = $gc->get_report();
 echo $renderer->admin_page($report);
+
 echo $OUTPUT->footer();
