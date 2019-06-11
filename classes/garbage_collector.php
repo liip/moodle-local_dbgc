@@ -109,7 +109,7 @@ class garbage_collector {
      */
     public function cleanup() {
         $cleanedup = [];
-        mtrace(sprintf('Starting cleanup; backup will be found at %s', $this->_backupfilepath));
+        mtrace(sprintf('Starting cleanup; backup would be found at %s', $this->_backupfilepath));
         $tuples = $this->_get_all_foreign_key_tuples();
 
         $this->_progress->start_progress('dbgc_report', count($tuples));
@@ -153,7 +153,6 @@ class garbage_collector {
             mtrace(sprintf('%d tables cleaned up from %d orphaned records', count($cleanedup), array_sum($cleanedup)));
             mtrace(sprintf('A backup is to be found at : %s', $this->_backupfilepath));
         }
-
         $this->_progress->end_progress();
     }
 

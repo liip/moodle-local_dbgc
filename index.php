@@ -97,6 +97,8 @@ if ($notneeded) {
         echo "<pre>";
         $gc->cleanup();
         echo "</pre>";
+        echo $renderer->admin_page([]);
+
     } else {
         $report = $gc->get_report();
         if (empty($report)) {
