@@ -45,12 +45,23 @@ class garbage_collector {
     private $_backupfilepath;
 
     /**
+     * @var \xmldb_structure $_xmlschema The complete XMLDB Schema.
+     */
+    private $_xmlschema;
+
+    /**
      * Initializes what the GC needs.
      *
      * @return void
      */
     public function __construct() {
+        global $DB;
+
         $this->_backupfilepath = $this->get_backup_file_path();
+
+        // Get the complete currently-setup XML schema for that instance.
+        $dbman = $DB->get_manager();
+        $this->_xmlschema = $dbman->get_install_xml_schema();
     }
 
     /**
@@ -136,15 +147,9 @@ class garbage_collector {
     private function _get_all_foreign_key_tuples() {
         static $tuples = [];
 
-        global $DB;
-
-        // Get the complete currently-setup XML schema for that instance.
-        $dbman = $DB->get_manager();
-        $xmlschema = $dbman->get_install_xml_schema();
-
         $tuples = [];
         // Run through all tables, all keys, to check if we have mismatched entries.
-        foreach ($xmlschema->getTables() as $table) {
+        foreach ($this->_xmlschema->getTables() as $table) {
             foreach ($table->getKeys() as $key) {
                 if (in_array($key->getType(), [XMLDB_KEY_FOREIGN, XMLDB_KEY_FOREIGN_UNIQUE]) ) {
                     $tuple = new \stdClass();
