@@ -40,6 +40,18 @@ use xmldb;
 class garbage_collector {
 
     /**
+     * @var int Whether to get the count, all the IDs or all the data.
+     */
+    const REPORT_GET_COUNT = 1;
+    const REPORT_GET_IDS = 2;
+    const REPORT_GET_DATA = 3;
+
+    /**
+     * @var int How many records to backup and delete at a time.
+     */
+    const CLEANUP_STEP = 1024*32;
+
+    /**
      * @var string $_backupfilepath Where the garbage will be backed-up.
      */
     private $_backupfilepath;
@@ -106,17 +118,24 @@ class garbage_collector {
             $table = $tuple->table;
             $key = $tuple->key;
             // We have a foreign key for another table.
-            // Get orphaned records for that table/key pair.
-            $records = $this->_get_orphaned_records($table, $key, true);
-            $nrecords = count($records);
+            // Get at most CLEANUP_STEP orphaned records for that table/key pair.
+            while (
+                    count(
+                        $records = $this->_get_orphaned_records(
+                            $table,
+                            $key,
+                            self::REPORT_GET_DATA,
+                            self::CLEANUP_STEP
+                        )
+                    )
+                    > 0
+                ) {
 
-            if ($nrecords > 0) {
-                $this->_progress->progress($tupleid);
                 mtrace(
                     sprintf(
-                        '%s has %d records pointing to inexistant counterparts in table %s',
+                        '%s still has %d+ records pointing to inexistant counterparts in table %s',
                         $table->getName(),
-                        $nrecords,
+                        count($records),
                         $key->getRefTable()
                     )
                 );
@@ -125,8 +144,9 @@ class garbage_collector {
                 $this->_backup_records($table, $key, $records);
                 mtrace(' → Delete');
                 $this->_delete_records($table, $records);
-                $cleanedup[] = $nrecords;
+                $cleanedup[] = count($records);
             }
+            $this->_progress->progress($tupleid);
         }
 
         if (count($cleanedup) > 0) {
@@ -153,7 +173,7 @@ class garbage_collector {
             $key = $tuple->key;
             // We have a foreign key for another table.
             // Get count of orphaned records for that table/key pair.
-            $records = $this->_get_orphaned_records($table, $key, false);
+            $records = $this->_get_orphaned_records($table, $key, self::REPORT_GET_COUNT);
 
             if ($records > 0) {
                 $report[$table->getName()] = $records;
@@ -192,13 +212,19 @@ class garbage_collector {
     /**
      * Given a table and a key, get orphaned records for these.
      *
-     * @param \xmldb_table $table   source table object
-     * @param \xmldb_key   $key     foreign key object
-     * @param bool         $alldata provide full data instead of just the count
+     * @param \xmldb_table $table      source table object
+     * @param \xmldb_key   $key        foreign key object
+     * @param int          $whattoget  count, ids, or all
+     * @param int          $maxrecords How many records to get maximally
      *
      * @return array of fieldset objets
      */
-    private function _get_orphaned_records(\xmldb_table $table, \xmldb_key $key, bool $alldata = false) {
+    private function _get_orphaned_records(
+        \xmldb_table $table,
+        \xmldb_key $key,
+        int $whattoget = self::REPORT_GET_COUNT,
+        int $maxrecords = -1
+    ) {
         global $DB;
 
         $tablename = $table->getName();
@@ -206,14 +232,28 @@ class garbage_collector {
         $reftablename = $key->getRefTable();
         $reffields = $key->getRefFields();
 
+        switch ($whattoget) {
+        case self::REPORT_GET_COUNT:
+        default:
+            $selected = 'COUNT(t.id)';
+            break;
+        case self::REPORT_GET_IDS:
+            $selected = 't.id';
+            break;
+        case self::REPORT_GET_DATA:
+            $selected = 't.*';
+            break;
+        }
+
         // Build SQL to find the orphaned records.
         $sql = sprintf("SELECT %s
                         FROM {%s} t
                 LEFT OUTER JOIN {%s} r",
-            $alldata ? 't.*' : 'COUNT(t.id)',
+            $selected,
             $tablename,
             $reftablename
         );
+
         // For each field pair,:
         // - bind the LEFT OUTER JOIN to match on the field pairs;
         // - restrict the match to when the joined table has no counterparts
@@ -228,11 +268,17 @@ class garbage_collector {
         $sql .= ' ON ' . implode(' AND ', $onfields);
         $sql .= ' WHERE ' . implode(' AND ', $conditions);
 
-        // Get these orphaned records.
-        if ($alldata) {
-            return $DB->get_records_sql($sql);
-        } else {
+        if ($maxrecords > 0) {
+            $sql .= ' LIMIT '.$maxrecords;
+        }
+
+        switch ($whattoget) {
+        case self::REPORT_GET_COUNT:
+        default:
             return $DB->count_records_sql($sql);
+        case self::REPORT_GET_IDS:
+        case self::REPORT_GET_DATA:
+            return $DB->get_records_sql($sql);
         }
     }
 
@@ -279,7 +325,7 @@ class garbage_collector {
             $recordsqls[] = sprintf('  (%s)', implode(',', $recordstruct));
         }
         $insertsql .= implode(",\n", $recordsqls);
-        $insertsql .= ';\n';
+        $insertsql .= ";\n";
         // Write the INSERT lines in the backup file.
         return file_put_contents($this->_backupfilepath, $insertsql, FILE_APPEND);
     }
