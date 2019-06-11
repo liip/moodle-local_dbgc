@@ -79,7 +79,7 @@ class garbage_collector {
             $key = $tuple->key;
             // We have a foreign key for another table.
             // Get orphaned records for that table/key pair.
-            $records = $this->_get_orphaned_records($table, $key);
+            $records = $this->_get_orphaned_records($table, $key, true);
             $nrecords = count($records);
 
             if ($nrecords > 0) {
@@ -118,11 +118,10 @@ class garbage_collector {
             $table = $tuple->table;
             $key = $tuple->key;
             // We have a foreign key for another table.
-            // Get orphaned records for that table/key pair.
-            $records = $this->_get_orphaned_records($table, $key);
-            $nrecords = count($records);
+            // Get count of orphaned records for that table/key pair.
+            $records = $this->_get_orphaned_records($table, $key, false);
 
-            if ($nrecords > 0) {
+            if ($records > 0) {
                 $report[$table->getName()] = $records;
             }
         }
@@ -161,12 +160,13 @@ class garbage_collector {
     /**
      * Given a table and a key, get orphaned records for these.
      *
-     * @param \xmldb_table $table source table object
-     * @param \xmldb_key   $key   foreign key object
+     * @param \xmldb_table $table   source table object
+     * @param \xmldb_key   $key     foreign key object
+     * @param bool         $alldata provide full data instead of just the count
      *
      * @return array of fieldset objets
      */
-    private function _get_orphaned_records(\xmldb_table $table, \xmldb_key $key) {
+    private function _get_orphaned_records(\xmldb_table $table, \xmldb_key $key, bool $alldata = false) {
         global $DB;
 
         $tablename = $table->getName();
@@ -175,9 +175,10 @@ class garbage_collector {
         $reffields = $key->getRefFields();
 
         // Build SQL to find the orphaned records.
-        $sql = sprintf("SELECT t.*
+        $sql = sprintf("SELECT %s
                         FROM {%s} t
                 LEFT OUTER JOIN {%s} r",
+            $alldata ? 't.*' : 'COUNT(t.id)',
             $tablename,
             $reftablename
         );
@@ -196,7 +197,11 @@ class garbage_collector {
         $sql .= ' WHERE ' . implode(' AND ', $conditions);
 
         // Get these orphaned records.
-        return $DB->get_records_sql($sql);
+        if ($alldata) {
+            return $DB->get_records_sql($sql);
+        } else {
+            return $DB->count_records_sql($sql);
+        }
     }
 
 

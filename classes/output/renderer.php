@@ -50,9 +50,8 @@ class renderer extends plugin_renderer_base {
         $params['report'] = [];
         $totalrecords = 0;
         foreach ($report as $tablename => $records) {
-            $nrecords = count($records);
-            $totalrecords += $nrecords;
-            $params['report'][] = ['name' => $tablename, 'count' => $nrecords];
+            $totalrecords += $records;
+            $params['report'][] = ['name' => $tablename, 'count' => $records];
         }
 
         $params['message'] = new \lang_string('needed', 'local_dbgc', $totalrecords);
