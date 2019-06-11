@@ -35,8 +35,8 @@
 
 <dl>
 {{#report}}
-  <dt>{{{ name }}}</dt>
-  <dd>{{#str}} n_orphaned_records, local_dbgc, {{count}} {{/str}}</dd>
+  <dt>{{{ name }}} ({{{ fields_list }}}) =&gt {{{ reftablename }}} ({{{ reffields_list }}})</dt>
+  <dd>{{#str}} n_orphaned_records, local_dbgc, {{records}} {{/str}}</dd>
 {{/report}}
 </dl>
 

@@ -49,9 +49,13 @@ class renderer extends plugin_renderer_base {
         $params['notneeded'] = (count($report) == 0);
         $params['report'] = [];
         $totalrecords = 0;
-        foreach ($report as $tablename => $records) {
-            $totalrecords += $records;
-            $params['report'][] = ['name' => $tablename, 'count' => $records];
+        foreach ($report as $tablename => $entry) {
+            $totalrecords += $entry["records"];
+            $params['report'][] = $entry + [
+                'name' => $tablename,
+                'fields_list' => implode(',', $entry['fields']),
+                'reffields_list' => implode(',', $entry['reffields'])
+            ];
         }
 
         $params['message'] = new \lang_string('needed', 'local_dbgc', $totalrecords);

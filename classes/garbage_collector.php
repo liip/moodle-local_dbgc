@@ -176,7 +176,12 @@ class garbage_collector {
             $records = $this->_get_orphaned_records($table, $key, self::REPORT_GET_COUNT);
 
             if ($records > 0) {
-                $report[$table->getName()] = $records;
+                $report[$table->getName()] = [
+                    "fields" => $key->getFields(),
+                    "reftablename" => $key->getRefTable(),
+                    "reffields" => $key->getRefFields(),
+                    "records" => $records
+                ];
             }
 
             $this->_progress->progress($tupleid);
