@@ -57,7 +57,7 @@ class garbage_collector {
     /**
      * @var int How many records to backup and delete at a time.
      */
-    const CLEANUP_STEP = 1024 * 128;
+    const CLEANUP_STEP = 1024 * 16;
 
     /**
      * @var string $_backupfilepath Where the garbage will be backed-up.
@@ -141,14 +141,14 @@ class garbage_collector {
 
                 mtrace(
                     sprintf(
-                        '%s still has %d+ records pointing to inexistant counterparts in table %s',
+                        '%s still has %s records pointing to inexistant counterparts in table %s',
                         $table->getName(),
-                        count($records),
+                        count($records) == self::CLEANUP_STEP ? 'more than '.self::CLEANUP_STEP : count($records),
                         $key->getRefTable()
                     )
                 );
 
-                mtrace(' → Create backup');
+                mtrace(' → Backup');
                 $this->_backup_records($table, $key, $records);
                 mtrace(' → Delete');
                 $this->_delete_records($table, $records);
