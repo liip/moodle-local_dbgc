@@ -113,9 +113,12 @@ class garbage_collector {
     /**
      * Run the actual DB cleanup.
      *
+     * @param string $tablename The table that was just cleaned up
+     * @param string $keyname   The foreign key name that was just cleaned up
+     *
      * @return void
      */
-    public function cleanup() {
+    public function cleanup(string $tablename='', string $keyname = '') {
         $cleanedup = [];
         mtrace(sprintf('Starting cleanup; backup would be found at %s', $this->_backupfilepath));
         $tuples = $this->_get_all_foreign_key_tuples();
@@ -125,6 +128,9 @@ class garbage_collector {
         foreach ($tuples as $tupleid => $tuple) {
             $table = $tuple->table;
             $key = $tuple->key;
+            if (!empty($tablename) && !empty($keyname) && !($tablename == $table->getName() && $keyname == $key->getName())) {
+                continue;
+            }
             // We have a foreign key for another table.
             // Get at most CLEANUP_STEP orphaned records for that table/key pair.
             while (
@@ -184,6 +190,7 @@ class garbage_collector {
 
             if ($records > 0) {
                 $report[$table->getName()] = [
+                    "keyname" => $key->getName(),
                     "fields" => $key->getFields(),
                     "reftablename" => $key->getRefTable(),
                     "reffields" => $key->getRefFields(),

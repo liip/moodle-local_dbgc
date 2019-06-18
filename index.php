@@ -43,6 +43,8 @@ $schedule    = optional_param('schedule', 0, PARAM_BOOL);
 $doitnow     = optional_param('doitnow', 0, PARAM_BOOL);
 $confirm     = optional_param('confirm', 0, PARAM_BOOL);
 $notneeded   = optional_param('notneeded', 0, PARAM_BOOL);
+$tablename   = optional_param('tablename', '', PARAM_ALPHAEXT);
+$keyname     = optional_param('keyname', '', PARAM_ALPHAEXT);
 
 // Page settings.
 $PAGE->set_context(context_system::instance());
@@ -64,6 +66,8 @@ if ($schedule || $doitnow) {
             $confirm = new lang_string('confirm_schedule', 'local_dbgc');
         } else if ($doitnow) {
             $optionsyes['doitnow'] = 1;
+            $optionsyes['tablename'] = $tablename;
+            $optionsyes['keyname'] = $keyname;
             $confirm = new lang_string('confirm_doit', 'local_dbgc');
         }
         echo $OUTPUT->header();
@@ -95,10 +99,9 @@ if ($notneeded) {
 
     if ($doitreally) {
         echo "<pre>";
-        $gc->cleanup();
+        $gc->cleanup($tablename, $keyname);
         echo "</pre>";
-        echo $renderer->admin_page([]);
-
+        echo $renderer->finished_cleanup($tablename, $keyname);
     } else {
         $report = $gc->get_report();
         if (empty($report)) {

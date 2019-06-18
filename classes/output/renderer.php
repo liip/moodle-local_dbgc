@@ -53,14 +53,42 @@ class renderer extends plugin_renderer_base {
         $totalrecords = 0;
         foreach ($report as $tablename => $entry) {
             $totalrecords += $entry["records"];
+            $a = new \stdClass();
+            $a->tablename = $tablename;
+            $a->keyname = $entry["keyname"];
+            $a->doitnow = 1;
             $params['report'][] = $entry + [
                 'name' => $tablename,
                 'fields_list' => implode(',', $entry['fields']),
-                'reffields_list' => implode(',', $entry['reffields'])
+                'reffields_list' => implode(',', $entry['reffields']),
+                'cleanup_link' => new \moodle_url('/local/dbgc/index.php', (array)($a)),
+                'cleanup_message' => new \lang_string('cleanup_partial', 'local_dbgc', $a)
             ];
         }
 
         $params['message'] = new \lang_string('needed', 'local_dbgc', $totalrecords);
         return parent::render_from_template('local_dbgc/admin_page', $params);
+    }
+
+    /**
+     * Render the end of the cleanup 'doitnow' page
+     *
+     * @param string $tablename The table that was just cleaned up
+     * @param string $keyname   The foreign key name that was just cleaned up
+     *
+     * @return string html for the page
+     * @throws moodle_exception
+     */
+    public function finished_cleanup(string $tablename = '', string $keyname = '') {
+        $params = [];
+        if (!empty($tablename) && !empty($keyname)) {
+            $a = new \stdClass();
+            $a->tablename = $tablename;
+            $a->keyname = $keyname;
+            $params["message"] = new \lang_string('finished_cleanup_partial', 'local_dbgc', $a);
+        } else {
+            $params["message"] = new \lang_string('finished_cleanup_complete', 'local_dbgc');
+        }
+        return parent::render_from_template('local_dbgc/finished_cleanup', $params);
     }
 }

@@ -36,3 +36,8 @@ $string['n_orphaned_records'] = '{$a} orphaned records';
 $string['doitnow'] = "Proceed with garbage collection now";
 $string['confirm_doit'] = "The database garbage collection will be run NOW within the webserver process. Is this what you really want?";
 $string['donenow_correctly'] = "The garbage collection has been correctly executed.";
+
+$string['cleanup_partial'] = 'Cleanup table {$a->tablename} for {$a->keyname}';
+$string['finished_cleanup'] = 'Return to report';
+$string['finished_cleanup_complete'] = 'Finished cleanup of all concerned tables and keys.';
+$string['finished_cleanup_partial'] = 'Finished cleanup of table {$a->tablename} for {$a->keyname} orphaned keys.';

@@ -22,11 +22,11 @@
 {{> core/notification_warning}}
 
 <div class="btn-group" role="group">
-    <a role="button" title="{{#str}} schedule, local_dbgc {{/str}}" class="btn btn-secondary" href="?schedule=1">
+    <a role="button" title="{{#str}} schedule, local_dbgc {{/str}}" class="btn btn-warning" href="?schedule=1">
         {{#str}} schedule, local_dbgc {{/str}}
     </a>
 
-    <a role="button" title="{{#str}} doitnow, local_dbgc {{/str}}" class="btn btn-primary" href="?doitnow=1">
+    <a role="button" title="{{#str}} doitnow, local_dbgc {{/str}}" class="btn btn-danger" href="?doitnow=1">
         {{#str}} doitnow, local_dbgc {{/str}}
     </a>
 </div>
@@ -35,7 +35,12 @@
 
 <dl>
 {{#report}}
-  <dt>{{{ name }}} ({{{ fields_list }}}) =&gt {{{ reftablename }}} ({{{ reffields_list }}})</dt>
+  <dt>
+    {{{ name }}} ({{{ fields_list }}}) =&gt {{{ reftablename }}} ({{{ reffields_list }}})
+    <a role="button" title="{{#str}} doitnow, local_dbgc {{/str}}" class="btn btn-sm btn-danger" href="{{{ cleanup_link }}}">
+        {{ cleanup_message }}
+    </a>
+  </dt>
   <dd>{{#str}} n_orphaned_records, local_dbgc, {{records}} {{/str}}</dd>
 {{/report}}
 </dl>
