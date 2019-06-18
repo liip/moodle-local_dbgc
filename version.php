@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2019061800;
+$plugin->version = 2019061801;
 $plugin->requires = 2018051706;
 $plugin->component = 'local_dbgc';
 $plugin->maturity = MATURITY_BETA;
