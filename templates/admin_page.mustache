@@ -21,6 +21,35 @@
 
 {{> core/notification_warning}}
 
+<h3>{{#str}} report_title, local_dbgc {{/str}}</h3>
+
+<table class="table">
+  <tr>
+    <th>{{#str}} report_tablename, local_dbgc {{/str}}</th>
+    <th>{{#str}} report_fieldslist, local_dbgc {{/str}}</th>
+    <th>{{#str}} report_reftablename, local_dbgc {{/str}}</th>
+    <th>{{#str}} report_reffieldslist, local_dbgc {{/str}}</th>
+    <th>{{#str}} report_orphaned_records, local_dbgc {{/str}}</th>
+    <th>{{#str}} report_cleanup_that, local_dbgc {{/str}}</th>
+  </tr>
+{{#report}}
+  <tr>
+    <td>{{{ name }}}</td>
+    <td>{{{ fields_list }}}</td>
+    <td>{{{ reftablename }}}</td>
+    <td>{{{ reffields_list }}}</td>
+    <td>{{records}}</td>
+    <td>
+        <a role="button" title="{{#str}} doitnow, local_dbgc {{/str}}" class="btn btn-sm btn-danger" href="{{{ cleanup_link }}}">
+            {{ cleanup_message }}
+        </a>
+    </td>
+  </tr>
+{{/report}}
+</table>
+
+<h3>{{#str}} cleanupall_title, local_dbgc {{/str}}</h3>
+
 <div class="btn-group" role="group">
     <a role="button" title="{{#str}} schedule, local_dbgc {{/str}}" class="btn btn-warning" href="?schedule=1">
         {{#str}} schedule, local_dbgc {{/str}}
@@ -30,19 +59,5 @@
         {{#str}} doitnow, local_dbgc {{/str}}
     </a>
 </div>
-
-<h3>{{#str}} reporttitle, local_dbgc {{/str}}</h3>
-
-<dl>
-{{#report}}
-  <dt>
-    {{{ name }}} ({{{ fields_list }}}) =&gt {{{ reftablename }}} ({{{ reffields_list }}})
-    <a role="button" title="{{#str}} doitnow, local_dbgc {{/str}}" class="btn btn-sm btn-danger" href="{{{ cleanup_link }}}">
-        {{ cleanup_message }}
-    </a>
-  </dt>
-  <dd>{{#str}} n_orphaned_records, local_dbgc, {{records}} {{/str}}</dd>
-{{/report}}
-</dl>
 
 {{/notneeded}}

@@ -25,19 +25,25 @@
 
 $string['pluginname'] = "Database Garbage Collector";
 $string['settingspage'] = "Cleanup DB from cruft";
-$string['schedule'] = "Schedule garbage collection";
 $string['confirm_schedule'] = "The database garbage collection will be scheduled and run at a later point by the instance cron. Is this what you really want?";
 $string['scheduled_correctly'] = "The garbage collection ad'hoc task has been correctly scheduled. Watch out the cron logs!";
 $string['notneeded'] = 'There are no orphaned records in the database, all good!';
 $string['needed'] = 'There are {$a} orphaned records in the database; they should be removed!';
-$string['reporttitle'] = 'Detailed report';
-$string['n_orphaned_records'] = '{$a} orphaned records';
+$string['report_title'] = 'Orphaned records';
+$string['report_orphaned_records'] = 'Orphaned records';
+$string['report_tablename'] = 'Table';
+$string['report_fieldslist'] = 'Field(s)';
+$string['report_reftablename'] = 'Target table';
+$string['report_reffieldslist'] = 'Target field(s)';
+$string['report_cleanup_that'] = 'Cleanup?';
+$string['cleanupall_title'] = 'Cleanup all';
 
-$string['doitnow'] = "Proceed with garbage collection now";
+$string['schedule'] = "Schedule DB cleanup";
+$string['doitnow'] = "Proceed with DB cleanup immediately";
 $string['confirm_doit'] = "The database garbage collection will be run NOW within the webserver process. Is this what you really want?";
 $string['donenow_correctly'] = "The garbage collection has been correctly executed.";
 
-$string['cleanup_partial'] = 'Cleanup table {$a->tablename} for {$a->keyname}';
+$string['cleanup_partial'] = '{$a->tablename} ({$a->keyname})';
 $string['finished_cleanup'] = 'Return to report';
 $string['finished_cleanup_complete'] = 'Finished cleanup of all concerned tables and keys.';
 $string['finished_cleanup_partial'] = 'Finished cleanup of table {$a->tablename} for {$a->keyname} orphaned keys.';
