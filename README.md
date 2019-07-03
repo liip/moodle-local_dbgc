@@ -1,6 +1,6 @@
 # local/dbgc - Moodle Database Garbage Collector
 
-[![Build Status](https://travis-ci.com/liip/moodle-local_dbgc.svg?branch=master)](https://travis-ci.com/liip/moodle-local_dbgc)
+[![Build Status](https://travis-ci.org/liip/moodle-local_dbgc.svg?branch=master)](https://travis-ci.org/liip/moodle-local_dbgc)
 
 ## Motivation
 
