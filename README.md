@@ -24,3 +24,9 @@ From that report, an admin can either:
 
 * trigger an ad'hoc task to backup and remove all affected entries;
 * launch the backup and removal of all affected entries directly in the Moodle admin interface.
+
+# Authors
+
+This plugin was developed by [Liip AG](https://www.liip.ch/), the swiss Moodle Partner.
+
+Development and open-sourcing of this plugin was made possible thanks to funding by the [École polytechnique fédérale de Lausanne (EPFL)](https://www.epfl.ch/).
